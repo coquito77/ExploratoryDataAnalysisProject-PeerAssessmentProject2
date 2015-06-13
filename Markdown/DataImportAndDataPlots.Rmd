@@ -1,0 +1,160 @@
+---
+title: "Exploratory Data Analysis"
+author: "Course Project 2"
+date: "Saturday, June 13, 2015"
+output: pdf_document
+---
+
+
+
+```{r}
+
+# set the working directory
+
+setwd("~/ExploratoryDataAnalysisProject PeerAssessmentProject2/ExploratoryDataAnalysisProject-PeerAssessmentProject2/")
+
+# set the location to save the zip file
+
+temp <- "./data/exdata-data-NEI_data.zip"
+
+# download the file Note that https was changed to htpp
+download.file("http://d396qusza40orc.cloudfront.net/exdata%2Fdata%2FNEI_data.zip",
+temp)
+
+```
+
+# read the data
+
+```{r}
+zipdir <- "./files"
+
+unzip(temp, exdir = zipdir)
+# Check if both data exist. If not, load the data.
+if (!"neiData" %in% ls()) {
+    neiData <- readRDS("./files/summarySCC_PM25.rds")
+}
+if (!"sccData" %in% ls()) {
+    sccData <- readRDS("./files/Source_Classification_Code.rds")
+}
+
+# plot for figure 1
+
+
+par("mar"=c(5.1, 4.5, 4.1, 2.1))
+png(filename = "./figure/plot1.png", 
+    width = 480, height = 480, 
+    units = "px")
+totalEmissions <- aggregate(neiData$Emissions, list(neiData$year), FUN = "sum")
+# options(scipen=0)
+# options(scipen=999)
+plot(totalEmissions, type = "l", xlab = "Year", 
+     main = "Total Emissions in the United States from 1999 to 2008", 
+     ylab = expression('Total PM'[2.5]*" Emission"))
+dev.off()
+
+```
+
+# plot the data
+
+```{r}
+
+# plot for figure 1
+
+par("mar"=c(5.1, 4.5, 4.1, 2.1))
+png(filename = "./figure/plot1.png", 
+    width = 480, height = 480, 
+    units = "px")
+totalEmissions <- aggregate(neiData$Emissions, list(neiData$year), FUN = "sum")
+# options(scipen=0)
+# options(scipen=999)
+plot(totalEmissions, type = "l", xlab = "Year", 
+     main = "Total Emissions in the United States from 1999 to 2008", 
+     ylab = expression('Total PM'[2.5]*" Emission"))
+dev.off()
+
+# plot fig 2
+
+subset <- neiData[neiData$fips == "24510", ] 
+
+par("mar"=c(5.1, 4.5, 4.1, 2.1))
+png(filename = "./figure/plot2.png", 
+    width = 480, height = 480, 
+    units = "px")
+totalEmissions <- aggregate(subset$Emissions, list(subset$year), FUN = "sum")
+# options(scipen=0)
+# options(scipen=999)
+plot(totalEmissions, type = "l", xlab = "Year", 
+     main = "Total Emissions in Baltimore City from 1999 to 2008", 
+     ylab = expression('Total PM'[2.5]*" Emission"))
+
+dev.off()
+
+# plot figure 3
+
+library(ggplot2)
+par("mar"=c(5.1, 4.5, 4.1, 2.1))
+png(filename = "./figure/plot3.png", 
+    width = 480, height = 480, 
+    units = "px")
+g <- ggplot(subset, aes(year, Emissions, color = type))
+g + geom_line(stat = "summary", fun.y = "sum") +  theme_minimal() + 
+    ylab(expression('Total PM'[2.5]*" Emissions")) +
+    ggtitle("Total Emissions in Baltimore City from 1999 to 2008")
+dev.off()
+
+# plot fig 4
+
+par("mar"=c(5.1, 4.5, 4.1, 2.1))
+png(filename = "./figure/plot4.png", 
+    width = 480, height = 480, 
+    units = "px")
+coal <- grep("coal", sccData$Short.Name, ignore.case = T)
+coal <- sccData[coal, ]
+coal <- neiData[neiData$SCC %in% coal$SCC, ]
+
+coalEmissions <- aggregate(coal$Emissions, list(coal$year), FUN = "sum")
+# options(scipen=0)
+# options(scipen=999)
+plot(coalEmissions, type = "l", xlab = "Year", 
+     main = "Total Emissions From Coal Combustion-related\n Sources from 1999 to 2008", 
+     ylab = expression('Total PM'[2.5]*" Emission"))
+
+dev.off()
+
+# plot fig 5
+
+par("mar"=c(5.1, 4.5, 4.1, 2.1))
+png(filename = "./figure/plot5.png", 
+    width = 480, height = 480, 
+    units = "px")
+motor <- grep("motor", sccData$Short.Name, ignore.case = T)
+motor <- sccData[motor, ]
+motor <- subset[subset$SCC %in% motor$SCC, ]
+motorEmissions <- aggregate(motor$Emissions, list(motor$year), FUN = "sum")
+
+plot(motorEmissions, type = "l", xlab = "Year", 
+     main = "Total Emissions From Motor Vehicle Sources\n from 1999 to 2008 in Baltimore City", 
+     ylab = expression('Total PM'[2.5]*" Emission"))
+
+dev.off()
+
+# plot fig 6
+
+subset <- neiData[neiData$fips == "24510"|neiData$fips == "06037", ]
+
+par("mar"=c(5.1, 4.5, 4.1, 2.1))
+png(filename = "./figure/plot6.png", 
+    width = 480, height = 480, 
+    units = "px", bg = "transparent")
+motor <- grep("motor", sccData$Short.Name, ignore.case = T)
+motor <- sccData[motor, ]
+motor <- subset[subset$SCC %in% motor$SCC, ]
+
+g <- ggplot(motor, aes(year, Emissions, color = fips))
+g + geom_line(stat = "summary", fun.y = "sum") + theme_minimal() +
+    ylab(expression('Total PM'[2.5]*" Emissions")) +
+    ggtitle("Comparison of Total Emissions From Motor\n Vehicle Sources in Baltimore City\n and Los Angeles County from 1999 to 2008") +
+    scale_colour_discrete(name = "Group", label = c("Los Angeles","Baltimore"))
+dev.off()
+
+```
