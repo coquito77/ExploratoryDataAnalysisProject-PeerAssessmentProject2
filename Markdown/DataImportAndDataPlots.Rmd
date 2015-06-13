@@ -1,8 +1,7 @@
 ---
 title: "Exploratory Data Analysis"
 author: "Course Project 2"
-date: "Saturday, June 13, 2015"
-output: pdf_document
+
 ---
 
 
@@ -36,21 +35,6 @@ if (!"neiData" %in% ls()) {
 if (!"sccData" %in% ls()) {
     sccData <- readRDS("./files/Source_Classification_Code.rds")
 }
-
-# plot for figure 1
-
-
-par("mar"=c(5.1, 4.5, 4.1, 2.1))
-png(filename = "./figure/plot1.png", 
-    width = 480, height = 480, 
-    units = "px")
-totalEmissions <- aggregate(neiData$Emissions, list(neiData$year), FUN = "sum")
-# options(scipen=0)
-# options(scipen=999)
-plot(totalEmissions, type = "l", xlab = "Year", 
-     main = "Total Emissions in the United States from 1999 to 2008", 
-     ylab = expression('Total PM'[2.5]*" Emission"))
-dev.off()
 
 ```
 
